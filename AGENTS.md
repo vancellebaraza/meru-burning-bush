@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project architecture
+- Keep page copy and repeatable mock content in local `src/data/` modules, with shared site chrome and sections in `src/components/`; this keeps church updates independent of presentation and backend setup.
+- Use the installed TanStack file-based router for pages and navigation rather than adding React Router, because this project is built on TanStack Start.
