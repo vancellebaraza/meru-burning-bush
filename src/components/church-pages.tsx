@@ -15,7 +15,8 @@ import { ministries } from "@/data/ministries";
 import { sermons } from "@/data/sermons";
 import { givingContent } from "@/data/giving";
 import { contactContent } from "@/data/contact";
-import gatheringImage from "@/assets/meru-church-gathering.jpg";
+
+const gatheringImage = "/assets/meru-church-gathering.jpg";
 
 const ministryIcons = [Sun, Sparkles, Music2, Heart, BookOpen, HandHeart];
 
