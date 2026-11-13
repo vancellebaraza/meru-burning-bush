@@ -82,7 +82,7 @@ function SocialLink({ label, children }: { label: string; children: React.ReactN
 }
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
-  return <><SiteHeader /><main>{children}</main><SiteFooter /></>;
+  return <div className="site-page-enter"><SiteHeader /><main>{children}</main><SiteFooter /></div>;
 }
 
 export function PageIntro({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }) {
@@ -102,5 +102,5 @@ export function SectionHeading({ eyebrow, title, description }: { eyebrow?: stri
 }
 
 export function PageBand({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <section className={`section-space ${className}`}><div className="church-container">{children}</div></section>;
+  return <section className={`section-space scroll-reveal ${className}`}><div className="church-container">{children}</div></section>;
 }
