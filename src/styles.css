@@ -162,8 +162,51 @@
     font-family: "DM Sans", sans-serif;
   }
 
-  h1, h2, h3, .font-display {
+  h1,
+  h2,
+  h3,
+  .font-display {
     font-family: "Playfair Display", Georgia, serif;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Display type: tighter tracking as size grows, balanced wrapping. */
+  h1 {
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  h2 {
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+  h3 {
+    letter-spacing: -0.012em;
+  }
+  p {
+    text-wrap: pretty;
+  }
+
+  a,
+  button,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
   }
 }
 
@@ -179,29 +222,204 @@
   padding-block: clamp(4rem, 8vw, 7rem);
 }
 
-.site-page-enter main {
-  animation: page-enter 480ms ease-out both;
+/* ---------------------------------------------------------------------------
+ * Motion tokens. Entrances use ease-out; nothing here runs longer than 300ms.
+ * ------------------------------------------------------------------------- */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-press: 120ms;
+  --dur-fast: 180ms;
+  --dur-enter: 300ms;
 }
 
-.scroll-reveal {
-  animation: reveal-on-scroll 700ms ease-out both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 24%;
+/* Press feedback: responds on pointer-down, instantly. Covers shadcn buttons rendered as links. */
+button:not(:disabled),
+[role="button"],
+a[href][class*="inline-flex"],
+.press {
+  transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+  transition-duration:
+    var(--dur-press), var(--dur-fast), var(--dur-fast), var(--dur-fast), var(--dur-fast),
+    var(--dur-fast);
+  transition-timing-function: var(--ease-out);
 }
 
-@keyframes page-enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+button:not(:disabled):active,
+[role="button"]:active,
+a[href][class*="inline-flex"]:active,
+.press:active {
+  transform: scale(0.97);
 }
 
-@keyframes reveal-on-scroll {
-  from { opacity: 0.35; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ---------------------------------------------------------------------------
+ * Site header: translucent, blurred, with a soft scroll edge instead of a hard border.
+ * ------------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: color-mix(in oklab, var(--background) 72%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
 }
 
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklab, var(--foreground) 14%, transparent) 12%,
+    color-mix(in oklab, var(--foreground) 14%, transparent) 88%,
+    transparent
+  );
+  box-shadow: 0 8px 24px -14px color-mix(in oklab, var(--foreground) 30%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.site-header[data-scrolled="true"]::after {
+  opacity: 1;
+}
+
+/* Logo: the artwork has a white background; multiply makes it vanish on the warm white. */
+.logo-blend {
+  mix-blend-mode: multiply;
+}
+
+/* Mobile menu: scales from the menu button (top right), same path in and out. */
+.mobile-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 1.25rem;
+  width: min(22rem, calc(100vw - 2.5rem));
+  padding: 0.5rem;
+  border-radius: 1.25rem;
+  background-color: color-mix(in oklab, var(--background) 82%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 8%, transparent),
+    0 24px 48px -16px color-mix(in oklab, var(--foreground) 35%, transparent);
+  transform-origin: top right;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95) translateY(-6px);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    visibility 0s linear var(--dur-fast);
+}
+
+.mobile-menu[data-state="open"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    visibility 0s;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu {
+    right: 2rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Hero entrance: transform + opacity only, short stagger. CSS-only, so it is visible
+ * without JavaScript and never flashes on server render.
+ * ------------------------------------------------------------------------- */
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-item {
+  animation: hero-in var(--dur-enter) var(--ease-out) both;
+  animation-delay: calc(60ms + var(--i, 0) * 70ms);
+}
+
+/* ---------------------------------------------------------------------------
+ * Scroll reveal, once. Content is visible by default (no JS, server render). The client
+ * marks only below-the-fold blocks as pending, then reveals each one a single time.
+ * ------------------------------------------------------------------------- */
+[data-reveal] {
+  transition:
+    opacity var(--dur-enter) var(--ease-out),
+    transform var(--dur-enter) var(--ease-out);
+}
+
+[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Accessibility
+ * ------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .site-page-enter main,
-  .scroll-reveal {
-    animation: none;
+  /* Cross-fade only: no movement, no stagger. */
+  .hero-item {
+    animation: hero-fade var(--dur-fast) linear both;
+    animation-delay: 0ms;
+  }
+
+  [data-reveal="pending"] {
+    transform: none;
+  }
+
+  .mobile-menu {
+    transform: none;
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:active,
+  a[href][class*="inline-flex"]:active,
+  .press:active {
+    transform: none;
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-header,
+  .mobile-menu {
+    background-color: var(--background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header {
+    background-color: color-mix(in oklab, var(--background) 94%, transparent);
+  }
+  .mobile-menu {
+    background-color: var(--background);
   }
 }

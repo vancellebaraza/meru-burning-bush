@@ -1,77 +1,119 @@
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Facebook, Instagram, Menu, X, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { navigation, site } from "@/data/site";
 
+const logoSrc = "/assets/logo.webp";
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  // Soft scroll edge: the hairline and shadow fade in once the page has moved.
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 8);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+
+  // Close the menu on route change.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Escape closes the menu and returns focus to its button; so does a press outside the header.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
+
   return (
-    <header className="relative z-20 border-b border-border bg-background">
-      <div className="church-container flex min-h-[76px] items-center justify-between gap-5">
-        <Link
-          to="/"
-          className="flex min-w-0 items-center gap-3"
-          aria-label="Burning Bush Ministries home"
-        >
-          <span className="grid size-11 shrink-0 place-items-center rounded-full border border-gold text-primary">
-            <span className="font-display text-xl font-semibold">B</span>
-          </span>
-          <span className="min-w-0 leading-tight">
-            <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-primary sm:text-xs">
-              Burning Bush
-            </span>
-            <span className="block text-[10px] uppercase tracking-[0.1em] text-muted-foreground sm:text-[11px]">
-              Ministries International
-            </span>
-          </span>
+    <header ref={headerRef} className="site-header" data-scrolled={scrolled}>
+      <div className="church-container flex min-h-[72px] items-center justify-between gap-5">
+        <Link to="/" className="press flex min-w-0 items-center" aria-label={`${site.name}, home`}>
+          <img
+            src={logoSrc}
+            alt=""
+            width={1200}
+            height={1123}
+            className="logo-blend h-12 w-auto sm:h-14"
+          />
+          <span className="sr-only">{site.name}</span>
         </Link>
-        <nav className="hidden items-center gap-5 lg:flex xl:gap-6" aria-label="Main navigation">
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Main navigation">
           {navigation.map((item) => (
             <Link
               key={item.href}
               to={item.href}
               activeProps={{ className: "text-primary" }}
-              className="whitespace-nowrap text-[13px] font-medium text-foreground transition-colors hover:text-primary"
+              className="whitespace-nowrap text-[13px] font-medium text-foreground/85 transition-colors duration-150 hover:text-primary"
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <Button asChild size="sm" className="hidden rounded-sm px-4 lg:inline-flex">
+        <Button asChild size="sm" className="hidden rounded-full px-5 lg:inline-flex">
           <Link to="/contact">
             Plan a visit <ArrowRight aria-hidden="true" />
           </Link>
         </Button>
         <Button
+          ref={menuButtonRef}
           variant="ghost"
           size="icon"
-          className="lg:hidden"
+          className="relative rounded-full lg:hidden"
           aria-label={open ? "Close navigation" : "Open navigation"}
           aria-expanded={open}
-          onClick={() => setOpen(!open)}
+          aria-controls="mobile-navigation"
+          onClick={() => setOpen((value) => !value)}
         >
-          {open ? <X /> : <Menu />}
+          <Menu
+            aria-hidden="true"
+            className={`absolute transition-[opacity,transform] duration-150 ease-out ${open ? "scale-75 opacity-0" : "scale-100 opacity-100"}`}
+          />
+          <X
+            aria-hidden="true"
+            className={`absolute transition-[opacity,transform] duration-150 ease-out ${open ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}
+          />
         </Button>
       </div>
-      {open && (
-        <nav
-          className="church-container grid gap-1 border-t border-border py-4 lg:hidden"
-          aria-label="Mobile navigation"
-        >
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={() => setOpen(false)}
-              activeProps={{ className: "text-primary bg-secondary" }}
-              className="rounded-sm px-3 py-2.5 text-sm font-medium"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      )}
+      <nav
+        id="mobile-navigation"
+        className="mobile-menu grid gap-0.5 lg:hidden"
+        aria-label="Mobile navigation"
+        data-state={open ? "open" : "closed"}
+        inert={!open}
+      >
+        {navigation.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            activeProps={{ className: "text-primary bg-secondary" }}
+            className="press rounded-xl px-4 py-3 text-base font-medium"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }
@@ -81,11 +123,11 @@ export function SiteFooter() {
     <footer className="bg-foreground text-background">
       <div className="church-container grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr] md:py-16">
         <div>
-          <Link to="/" className="inline-flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-full border border-gold text-gold font-display text-lg">
-              B
+          <Link to="/" className="press inline-flex items-center" aria-label={`${site.name}, home`}>
+            <span className="grid place-items-center rounded-2xl bg-card p-2.5">
+              <img src={logoSrc} alt="" width={1200} height={1123} className="h-16 w-auto" />
             </span>
-            <span className="max-w-[230px] text-sm font-semibold leading-snug">{site.name}</span>
+            <span className="sr-only">{site.name}</span>
           </Link>
           <p className="mt-5 max-w-sm text-sm leading-6 text-background/75">“{site.motto}”</p>
           <div className="mt-5 flex items-center gap-2">
@@ -151,7 +193,7 @@ function SocialLink({ label, children }: { label: string; children: React.ReactN
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="site-page-enter">
+    <div>
       <SiteHeader />
       <main>{children}</main>
       <SiteFooter />
@@ -203,6 +245,34 @@ export function SectionHeading({
   );
 }
 
+/**
+ * Reveals a block once as it scrolls into view. Server render and no-JS visitors get the content
+ * visible; on the client only blocks that start below the fold are marked pending, so nothing
+ * flashes and nothing replays on later scrolls.
+ */
+function useRevealOnce<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    if (el.dataset["reveal"] === "in") return;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.9) return;
+    el.dataset["reveal"] = "pending";
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          el.dataset["reveal"] = "in";
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+}
+
 export function PageBand({
   children,
   className = "",
@@ -210,8 +280,9 @@ export function PageBand({
   children: React.ReactNode;
   className?: string;
 }) {
+  const ref = useRevealOnce<HTMLElement>();
   return (
-    <section className={`section-space scroll-reveal ${className}`}>
+    <section ref={ref} className={`section-space ${className}`}>
       <div className="church-container">{children}</div>
     </section>
   );

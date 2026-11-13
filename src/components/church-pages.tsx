@@ -40,10 +40,12 @@ const givingIcons = [Landmark, Smartphone, Cross];
 
 const ministryIcons = [Sun, Sparkles, Music2, Heart, BookOpen, HandHeart];
 
+const heroStep = (index: number) => ({ "--i": index }) as React.CSSProperties;
+
 export function HomePage() {
   return (
     <SiteLayout>
-      <section className="relative isolate flex min-h-[550px] items-end overflow-hidden bg-foreground sm:min-h-[600px] md:min-h-[660px]">
+      <section className="relative isolate flex min-h-[min(88svh,760px)] items-end overflow-hidden bg-foreground">
         <img
           src={gatheringImage}
           alt="A joyful congregation worshipping together"
@@ -52,20 +54,30 @@ export function HomePage() {
           fetchPriority="high"
           className="absolute inset-0 -z-20 size-full object-cover object-center"
         />
-        <div className="absolute inset-0 -z-10 bg-foreground/55" />
-        <div className="church-container w-full pb-14 pt-28 sm:pb-20 md:pb-24">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/80 via-foreground/40 to-foreground/25" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-foreground/50 to-transparent sm:w-2/3" />
+        <div className="church-container pb-24 pt-28 sm:pb-28 md:pb-32">
           <div className="max-w-3xl text-background">
-            <p className="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+            <p
+              className="hero-item mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-gold"
+              style={heroStep(0)}
+            >
               <span className="h-px w-9 bg-gold" />A church family in Meru, Kenya
             </p>
-            <h1 className="font-display text-5xl leading-[1.04] sm:text-6xl md:text-7xl">
+            <h1
+              className="hero-item font-display text-5xl leading-[1.02] sm:text-6xl md:text-7xl lg:text-8xl"
+              style={heroStep(1)}
+            >
               Everybody is <span className="text-gold">somebody.</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-background/90 sm:text-xl">
+            <p
+              className="hero-item mt-6 max-w-2xl text-lg leading-8 text-background/90 sm:text-xl sm:leading-9"
+              style={heroStep(2)}
+            >
               {vision}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="h-12 rounded-sm px-6">
+            <div className="hero-item mt-9 flex flex-wrap gap-3" style={heroStep(3)}>
+              <Button asChild size="lg" className="h-12 rounded-full px-7">
                 <Link to="/contact">
                   Plan a visit <ArrowRight />
                 </Link>
@@ -74,27 +86,27 @@ export function HomePage() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-12 rounded-sm border-background/60 bg-background/10 px-6 text-background hover:bg-background hover:text-foreground"
+                className="h-12 rounded-full border-background/50 bg-background/10 px-7 text-background backdrop-blur-md hover:bg-background hover:text-foreground"
               >
                 <Link to="/about">Discover our church</Link>
               </Button>
             </div>
           </div>
         </div>
-        <div className="absolute bottom-7 right-8 hidden items-center gap-2 text-xs font-medium uppercase tracking-[0.12em] text-background/80 md:flex">
+        <div className="absolute bottom-14 right-8 hidden items-center gap-2 text-xs font-medium uppercase tracking-[0.12em] text-background/80 md:flex">
           <span>Welcome home</span>
           <ArrowDownRight className="size-4 text-gold" />
         </div>
       </section>
 
-      <section className="border-b border-border bg-background">
-        <div className="church-container grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <section className="relative z-10 -mt-10">
+        <div className="church-container grid gap-3 sm:grid-cols-3">
           {serviceTimes.map((service) => (
             <div
               key={service.name}
-              className="flex items-center gap-4 py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0"
+              className="flex items-center gap-4 rounded-2xl bg-card/90 p-5 shadow-[0_12px_32px_-18px] shadow-foreground/40 ring-1 ring-border/70 backdrop-blur-xl"
             >
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-primary">
                 <Clock3 className="size-5" />
               </span>
               <div>
@@ -122,9 +134,12 @@ export function HomePage() {
               </Link>
             </Button>
           </div>
-          <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             {pillars.map((pillar) => (
-              <article key={pillar.number} className="border-t border-border pt-4">
+              <article
+                key={pillar.number}
+                className="rounded-2xl bg-card p-6 ring-1 ring-border/70"
+              >
                 <span className="text-xs font-bold tracking-[0.14em] text-gold">
                   {pillar.number}
                 </span>
@@ -136,29 +151,29 @@ export function HomePage() {
         </div>
       </PageBand>
 
-      <section className="bg-primary text-primary-foreground">
-        <div className="church-container grid gap-8 py-10 sm:grid-cols-[1fr_auto] sm:items-center sm:py-12">
+      <PageBand className="!pt-0">
+        <div className="grid gap-8 rounded-3xl bg-primary p-8 text-primary-foreground sm:grid-cols-[1fr_auto] sm:items-center sm:p-12">
           <div>
             <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-gold">
               <CalendarDays className="size-4" />
               Save the date · {featuredEvent.date}
             </p>
             <h2 className="font-display text-3xl sm:text-4xl">{featuredEvent.title}</h2>
-            <p className="mt-3 max-w-2xl leading-6 text-primary-foreground/80">
+            <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
               {featuredEvent.description}
             </p>
           </div>
           <Button
             asChild
             variant="outline"
-            className="w-fit rounded-sm border-primary-foreground/45 bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+            className="w-fit rounded-full border-primary-foreground/45 bg-transparent px-6 text-primary-foreground hover:bg-primary-foreground hover:text-primary"
           >
             <Link to="/services-events">
               Event details <ArrowRight />
             </Link>
           </Button>
         </div>
-      </section>
+      </PageBand>
 
       <PageBand className="bg-secondary/55">
         <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
@@ -172,7 +187,7 @@ export function HomePage() {
               community.
             </p>
           </div>
-          <Button asChild size="lg" className="w-fit rounded-sm">
+          <Button asChild size="lg" className="w-fit rounded-full px-7">
             <Link to="/give">
               Give to the ministry <ArrowRight />
             </Link>
