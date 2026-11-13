@@ -200,7 +200,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-page-enter main > section,
+  .site-page-enter main,
   .scroll-reveal {
     animation: none;
   }
