@@ -30,5 +30,5 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project architecture
-- Keep page copy and repeatable mock content in local `src/data/` modules, with shared site chrome and sections in `src/components/`; this keeps church updates independent of presentation and backend setup.
+- Keep page copy and repeatable mock content in local `src/data/` modules, shared site chrome and sections in `src/components/`, static images in `public/assets/`, and shared page/scroll motion in `src/styles.css`; this keeps content, viewable assets, and presentation easy to maintain without backend setup.
 - Use the installed TanStack file-based router for pages and navigation rather than adding React Router, because this project is built on TanStack Start.
