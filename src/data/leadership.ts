@@ -1,14 +1,20 @@
 export const leadershipContent = {
   eyebrow: "Our people",
   title: "Serving together. Leading with purpose.",
-  intro: "Our ministry board and local church pastors serve the church family, equip leaders, and care for our community.",
+  intro:
+    "Our ministry board and local church pastors serve the church family, equip leaders, and care for our community.",
   board: [
-    { name: "Ministry Board", role: "Governance & ministry oversight", initials: "MB" },
-    { name: "Ministry Leadership Team", role: "Ministry direction & development", initials: "ML" },
+    { name: "Dr Joe Faircloth", role: "Chairman", initials: "JF" },
+    { name: "Bishop Dr. Simon Ngigi", role: "Vice Chair", initials: "SN" },
+    { name: "Dickson Mwenda Ithiri", role: "Secretary", initials: "DI" },
+    { name: "John Ngugi Muchendu", role: "Treasurer", initials: "JM" },
   ],
   pastors: [
-    { name: "Senior Pastor", role: "Pastoral leadership", initials: "SP" },
-    { name: "Local Church Pastors", role: "Congregational care & discipleship", initials: "PC" },
+    { name: "Bishop Simon Ngigi", role: "Meru", initials: "SN" },
+    { name: "Rev. Dickson Mwenda Ithiri", role: "Mitunguu", initials: "DI" },
+    { name: "Simon Nkubi", role: "Rwanyange", initials: "SN" },
+    { name: "Rev. Patrick Ndung'u", role: "Machakos", initials: "PN" },
+    { name: "Pastor Joseph Owino", role: "Madogo", initials: "JO" },
   ],
-  note: "Pastor names and portraits will be added when supplied by the church.",
+  college: "Burning Bush Training College",
 };

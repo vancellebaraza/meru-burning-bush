@@ -2,7 +2,8 @@ export const site = {
   name: "Burning Bush Ministries International",
   shortName: "BBMI",
   motto: "In Burning Bush Ministries, everybody is somebody.",
-  address: "Mwiteria, Eastern Bypass, next to Kiambogo Coffee Factory, Meru",
+  address:
+    "Mwiteria, along Eastern Bypass, next to Kiambogo Coffee Factory, Meru town, Meru County, Kenya",
   phones: ["0794464082", "0105434899"],
   email: "merubbc2010@gmail.com",
 };
