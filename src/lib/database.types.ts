@@ -151,9 +151,9 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: {
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
-    };
+    // is_admin() lives in the private schema (not exposed to the API), so it is not callable
+    // from the client. To check admin status, select the user's own row from public.admins.
+    Functions: { [_ in never]: never };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

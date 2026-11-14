@@ -6,8 +6,9 @@
 --
 -- This file lives in db/ on purpose. supabase/migrations/ is managed by Lovable.
 --
--- AFTER the first run, make yourself an admin. Sign in once so a row exists under
--- Authentication -> Users, copy your user id (uuid), then run this one line:
+-- AFTER the first run, make yourself an admin. Sign-ups are disabled, so create the admin
+-- user in the dashboard under Authentication -> Users. Copy that user's id (uuid) into the
+-- insert line below, then run it:
 --
 --   insert into public.admins (user_id) values ('PASTE-USER-UUID-HERE') on conflict do nothing;
 --
@@ -37,7 +38,8 @@ create table if not exists public.events (
   is_published    boolean not null default false,
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now(),
-  constraint events_ends_after_start check (ends_at is null or ends_at >= starts_at)
+  constraint events_ends_after_start check (ends_at is null or ends_at >= starts_at),
+  constraint events_slug_format check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$')
 );
 
 create table if not exists public.fundraisers (
@@ -56,7 +58,8 @@ create table if not exists public.fundraisers (
   updated_at           timestamptz not null default now(),
   constraint fundraisers_goal_non_negative check (goal_amount_kes >= 0),
   constraint fundraisers_raised_non_negative check (raised_amount_kes >= 0),
-  constraint fundraisers_status_valid check (status in ('active', 'completed', 'closed'))
+  constraint fundraisers_status_valid check (status in ('active', 'completed', 'closed')),
+  constraint fundraisers_slug_format check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$')
 );
 
 create table if not exists public.photos (
@@ -110,9 +113,17 @@ create trigger fundraisers_set_updated_at
 -- 4. Admin check
 -- ---------------------------------------------------------------------------
 
+-- Lives in the private schema, not public: Supabase's API only exposes the public schema, so
+-- putting it here keeps it from being callable as /rest/v1/rpc/is_admin. RLS policies can still
+-- call it because anon and authenticated have USAGE on private and EXECUTE on the function.
+-- A browser client checks admin status by reading its own row in public.admins instead.
 -- SECURITY DEFINER so it can read public.admins whatever the caller's own access is.
 -- search_path is pinned to '' and every object is schema-qualified.
-create or replace function public.is_admin()
+create schema if not exists private;
+revoke all on schema private from public;
+grant usage on schema private to anon, authenticated;
+
+create or replace function private.is_admin()
 returns boolean
 language sql
 stable
@@ -124,8 +135,8 @@ as $$
   );
 $$;
 
-revoke all on function public.is_admin() from public;
-grant execute on function public.is_admin() to anon, authenticated;
+revoke all on function private.is_admin() from public;
+grant execute on function private.is_admin() to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 5. Table privileges (RLS below is the real gate; this is defence in depth)
@@ -158,45 +169,45 @@ create policy "admins: read own row" on public.admins
 drop policy if exists "events: public reads published" on public.events;
 create policy "events: public reads published" on public.events
   for select to anon, authenticated
-  using (is_published or (select public.is_admin()));
+  using (is_published or (select private.is_admin()));
 
 drop policy if exists "events: admins insert" on public.events;
 create policy "events: admins insert" on public.events
   for insert to authenticated
-  with check ((select public.is_admin()));
+  with check ((select private.is_admin()));
 
 drop policy if exists "events: admins update" on public.events;
 create policy "events: admins update" on public.events
   for update to authenticated
-  using ((select public.is_admin()))
-  with check ((select public.is_admin()));
+  using ((select private.is_admin()))
+  with check ((select private.is_admin()));
 
 drop policy if exists "events: admins delete" on public.events;
 create policy "events: admins delete" on public.events
   for delete to authenticated
-  using ((select public.is_admin()));
+  using ((select private.is_admin()));
 
 -- fundraisers
 drop policy if exists "fundraisers: public reads published" on public.fundraisers;
 create policy "fundraisers: public reads published" on public.fundraisers
   for select to anon, authenticated
-  using (is_published or (select public.is_admin()));
+  using (is_published or (select private.is_admin()));
 
 drop policy if exists "fundraisers: admins insert" on public.fundraisers;
 create policy "fundraisers: admins insert" on public.fundraisers
   for insert to authenticated
-  with check ((select public.is_admin()));
+  with check ((select private.is_admin()));
 
 drop policy if exists "fundraisers: admins update" on public.fundraisers;
 create policy "fundraisers: admins update" on public.fundraisers
   for update to authenticated
-  using ((select public.is_admin()))
-  with check ((select public.is_admin()));
+  using ((select private.is_admin()))
+  with check ((select private.is_admin()));
 
 drop policy if exists "fundraisers: admins delete" on public.fundraisers;
 create policy "fundraisers: admins delete" on public.fundraisers
   for delete to authenticated
-  using ((select public.is_admin()));
+  using ((select private.is_admin()));
 
 -- photos: visible when the parent event or fundraiser is published. The subqueries run under
 -- the caller's own RLS, which already limits non-admins to published parents. Photos with no
@@ -205,7 +216,7 @@ drop policy if exists "photos: public reads published parent" on public.photos;
 create policy "photos: public reads published parent" on public.photos
   for select to anon, authenticated
   using (
-    (select public.is_admin())
+    (select private.is_admin())
     or (event_id is not null and exists (
       select 1 from public.events e where e.id = photos.event_id and e.is_published
     ))
@@ -217,17 +228,17 @@ create policy "photos: public reads published parent" on public.photos
 drop policy if exists "photos: admins insert" on public.photos;
 create policy "photos: admins insert" on public.photos
   for insert to authenticated
-  with check ((select public.is_admin()));
+  with check ((select private.is_admin()));
 
 drop policy if exists "photos: admins update" on public.photos;
 create policy "photos: admins update" on public.photos
   for update to authenticated
-  using ((select public.is_admin()))
-  with check ((select public.is_admin()));
+  using ((select private.is_admin()))
+  with check ((select private.is_admin()));
 
 drop policy if exists "photos: admins delete" on public.photos;
 create policy "photos: admins delete" on public.photos
   for delete to authenticated
-  using ((select public.is_admin()));
+  using ((select private.is_admin()));
 
 commit;
