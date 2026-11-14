@@ -7,7 +7,18 @@ const publishableKey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as strin
 
 export type AppSupabaseClient = SupabaseClient<Database>;
 
-export const isSupabaseConfigured = Boolean(url && publishableKey);
+function isHttpUrl(value: string | undefined): boolean {
+  if (!value) return false;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+// A malformed URL counts as not configured, so a bad env value shows a message instead of crashing.
+export const isSupabaseConfigured = Boolean(publishableKey) && isHttpUrl(url);
 
 let client: AppSupabaseClient | undefined;
 
