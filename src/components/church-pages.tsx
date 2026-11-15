@@ -24,7 +24,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SiteLayout, PageIntro, PageBand, SectionHeading } from "@/components/church-site";
+import { SiteLayout, PageIntro, PageBand, SectionHeading, Reveal } from "@/components/church-site";
+import { churchPhotos, sermonPhotos, photoSrc, photoSrcSet } from "@/data/church-photos";
 import { vision, serviceTimes, pillars, featuredEvent } from "@/data/home";
 import { aboutContent } from "@/data/about";
 import { leadershipContent } from "@/data/leadership";
@@ -33,8 +34,6 @@ import { ministries } from "@/data/ministries";
 import { sermons } from "@/data/sermons";
 import { givingContent } from "@/data/giving";
 import { contactContent } from "@/data/contact";
-
-const gatheringImage = "/assets/meru-church-gathering.jpg";
 
 const givingIcons = [Landmark, Smartphone, Cross];
 
@@ -47,12 +46,15 @@ export function HomePage() {
     <SiteLayout>
       <section className="relative isolate flex min-h-[min(88svh,760px)] items-end overflow-hidden bg-foreground">
         <img
-          src={gatheringImage}
-          alt="A joyful congregation worshipping together"
+          src={photoSrc(churchPhotos.frontWide, 1600)}
+          srcSet={photoSrcSet(churchPhotos.frontWide)}
+          sizes="100vw"
+          alt={churchPhotos.frontWide.alt}
           width={1600}
-          height={1056}
+          height={1200}
           fetchPriority="high"
-          className="absolute inset-0 -z-20 size-full object-cover object-center"
+          decoding="async"
+          className="absolute inset-0 -z-20 size-full object-cover object-[62%_28%]"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/80 via-foreground/40 to-foreground/25" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-foreground/50 to-transparent sm:w-2/3" />
@@ -209,7 +211,7 @@ export function AboutPage() {
         />
       </PageBand>
       <PageBand className="border-y border-border bg-background !pt-0">
-        <div className="grid gap-12 lg:grid-cols-[1fr_0.85fr] lg:gap-20">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div className="space-y-5 text-base leading-8 text-muted-foreground">
             {aboutContent.story.map((p) => (
               <p key={p}>{p}</p>
@@ -221,10 +223,23 @@ export function AboutPage() {
               </cite>
             </blockquote>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ValuePanel title="Our vision" text={aboutContent.vision} />
-            <ValuePanel title="Our mission" text={aboutContent.mission} />
-          </div>
+          <Reveal>
+            <img
+              src={photoSrc(churchPhotos.angle, 1600)}
+              srcSet={photoSrcSet(churchPhotos.angle)}
+              sizes="(min-width: 1024px) 560px, 100vw"
+              alt={churchPhotos.angle.alt}
+              width={1600}
+              height={1200}
+              loading="lazy"
+              decoding="async"
+              className="h-auto w-full rounded-2xl object-cover"
+            />
+          </Reveal>
+        </div>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:mt-16 lg:gap-16">
+          <ValuePanel title="Our vision" text={aboutContent.vision} />
+          <ValuePanel title="Our mission" text={aboutContent.mission} />
         </div>
       </PageBand>
       <PageBand className="border-b border-border bg-background !pt-0">
@@ -391,32 +406,36 @@ export function SermonsPage() {
           description="Spend time in the Word with our church family. Sermon recordings will be shared here soon."
         />
         <div className="mt-12 grid gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
-          {sermons.map((sermon, index) => (
-            <article key={sermon.title} className="group">
-              <div className="relative aspect-[1.48] overflow-hidden bg-secondary">
-                <img
-                  src={gatheringImage}
-                  alt="Worship gathering at Burning Bush Ministries"
-                  loading="lazy"
-                  width={1600}
-                  height={1056}
-                  className={`size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] ${index % 3 === 1 ? "object-[35%_center]" : index % 3 === 2 ? "object-[75%_center]" : "object-center"}`}
-                />
-                <div className="absolute inset-0 grid place-items-center bg-foreground/15">
-                  <span className="grid size-12 place-items-center rounded-full bg-background text-primary">
-                    <Play className="ml-0.5 size-5 fill-current" />
+          {sermons.map((sermon, index) => {
+            const photo = sermonPhotos[index % sermonPhotos.length];
+            return (
+              <article key={sermon.title} className="group">
+                <div className="relative aspect-[1.48] overflow-hidden bg-secondary">
+                  <img
+                    src={photoSrc(photo, 800)}
+                    alt={photo.alt}
+                    loading="lazy"
+                    decoding="async"
+                    width={800}
+                    height={600}
+                    className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 grid place-items-center bg-foreground/15">
+                    <span className="grid size-12 place-items-center rounded-full bg-background text-primary">
+                      <Play className="ml-0.5 size-5 fill-current" />
+                    </span>
+                  </div>
+                  <span className="absolute bottom-3 left-3 bg-background px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em]">
+                    {sermon.format}
                   </span>
                 </div>
-                <span className="absolute bottom-3 left-3 bg-background px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em]">
-                  {sermon.format}
-                </span>
-              </div>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
-                {sermon.speaker} · {sermon.date}
-              </p>
-              <h2 className="mt-2 font-display text-xl">{sermon.title}</h2>
-            </article>
-          ))}
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+                  {sermon.speaker} · {sermon.date}
+                </p>
+                <h2 className="mt-2 font-display text-xl">{sermon.title}</h2>
+              </article>
+            );
+          })}
         </div>
       </PageBand>
     </SiteLayout>

@@ -296,6 +296,22 @@ function useRevealOnce<T extends HTMLElement>() {
   return ref;
 }
 
+/** Wraps a block in the same one-time scroll reveal that PageBand uses. */
+export function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRevealOnce<HTMLDivElement>();
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
 export function PageBand({
   children,
   className = "",
